@@ -1,6 +1,6 @@
 {
   "name": "Feedback",
   "tagline": "Feedback component for Phalcon",
-  "body": "Feedback is a Component for the Phalcon PHP framework.  It is intended to be used as a replacement for Phalcon's built-in _Flash_ and _Message_ functionalities.\r\n\r\n##Quick example##\r\n**Create a message**  \r\n\r\n```php\r\nFeedback::error('The model could not be saved');\r\n```\r\n\r\n**Retrieve messages**  \r\n\r\n```php\r\nFeedback::getError();\r\n```\r\n\r\nMore detailed examples, information, and documentation can be found in the [Wiki](https://github.com/quasipickle/feedback/wiki)",
+  "body": "Feedback is a Component for the Phalcon PHP framework.  It is intended to be used as a replacement for Phalcon's built-in _Flash_ and _Message_ functionalities.\r\n\r\n##Quick example##\r\n**Create a message**  \r\n\r\n```php\r\nFeedback::error('The model could not be saved');\r\n```\r\n\r\n**Retrieve messages**  \r\n\r\n```php\r\nFeedback::getError();\r\n```\r\n\r\nMore detailed examples, information, and documentation can be found in the [Wiki](https://github.com/quasipickle/feedback/wiki).\r\n\r\nReleased under the [MIT license](https://raw.githubusercontent.com/quasipickle/feedback/master/LICENSE)",
   "note": "Don't delete this file! It's used internally to help with page regeneration."
 }
