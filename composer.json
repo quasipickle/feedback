@@ -1,5 +1,5 @@
 {
-    "name": "University-Of-Alberta/Feedback",
+    "name": "university-of-alberta/Feedback",
     "description": "A user message reporting class intended to replace Phalcon's Flash and Message systems",
     "homepage": "http://quasipickle.github.io/feedback",
     "keywords": ["phalcon","feedback","error","message"],
