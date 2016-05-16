@@ -1,0 +1,7 @@
+{
+    "name": "University-Of-Alberta/Feedback",
+    "description": "A user message reporting class intended to replace Phalcon's Flash and Message systems",
+    "require": {
+        "php": "5.6 || ^7.0"
+    }
+}
