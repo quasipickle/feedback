@@ -1,7 +1,16 @@
 {
     "name": "University-Of-Alberta/Feedback",
     "description": "A user message reporting class intended to replace Phalcon's Flash and Message systems",
+    "homepage": "http://quasipickle.github.io/feedback",
+    "keywords": ["phalcon","feedback","error","message"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Dylan Anderson",
+            "role": "Developer"
+        }    
+    ],
     "require": {
-        "php": "^5.6 || ^7.0"
+        "php": ">=5.6"
     }
 }
