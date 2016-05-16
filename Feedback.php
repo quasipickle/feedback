@@ -257,16 +257,4 @@ class Feedback extends \Phalcon\Mvc\User\Component
     {
         return \Phalcon\DI::getDefault()->getSession();
     }
-
-    /**
-     * Sends an email to system administrators
-     *
-     * @param string $message   The message to send
-     * @uses config->mail->sysadmin
-     */
-    public static function alert($message, $address=null)
-    {
-        $Mailer = new \Component\Mailer('ALERT', $message);
-        $Mailer->send(\Phalcon\DI::getDefault()->getShared('config')->contact);
-    }
 }
