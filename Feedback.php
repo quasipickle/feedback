@@ -88,12 +88,13 @@ class Feedback extends \Phalcon\Mvc\User\Component
      * Imports text from an array of \Phalcon\Mvc\Message objects
      *
      * @param array $Model A model that has messages
+     * @param string $type The type of message to import as.  Can be namespaced.  Defaults to 'error'. Optional.
      * @uses self::setMessage() to set each message
      */
-    public static function importMessages($Model)
+    public static function importMessages($Model,$type = 'error')
     {
         foreach ($Model->getMessages() as $message) {
-            self::setMessage('error', $message);
+            self::setMessage($type, $message);
         }
     }
     
