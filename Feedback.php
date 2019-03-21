@@ -21,17 +21,9 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * This file contains the Component\Feedback class
  */
 
-namespace Component;
-
-/**
-*   This class is used to communicate errors & success to the View.
-*   This is intended to replace both Phalcon's Flash and Message objects
-*/
 class Feedback extends \Phalcon\Mvc\User\Component
 {
-    /**
-     * @var array $messages
-    */
+    /** @var array $messages The stored messages */
     public static $messages = [];
 
     /** @var string $session_key    Contains the $_SESSION key under which flashed messages will be stored */
@@ -41,12 +33,12 @@ class Feedback extends \Phalcon\Mvc\User\Component
      * Used to determine if a particular type & namespace of message exists.  Passing nothing
      * checks if ANY message exists
      *
-     * @param string $type      The type of message to check.  Optional. If provided, must be in the format: TYPE[(.|!)NAMESPACE]
+     * @param string $selector **[OPTIONAL]** The type of message to check. If provided, must be in the format: TYPE[(.|!)NAMESPACE] _(ie: error.user)_
      * @return boolean Whether messages of the passed type & namespace exist.
      */
-    public static function has($type = null)
+    public static function has(string $selector = null)
     {
-        return (count(self::getMessage($type)) > 0);
+        return (count(self::getMessage($selector)) > 0);
     }
 
     /**
@@ -69,6 +61,8 @@ class Feedback extends \Phalcon\Mvc\User\Component
      * Retrieves flashed messages from $_SESSION. Overwrites self::$messages
      *
      * @param boolean $flush    Whether or not to remove the flashed messages from $_SESSION.  Defaults to true
+     *
+     * @sets self::$messages
      */
     public static function setToFlashed($flush = true)
     {
@@ -88,7 +82,7 @@ class Feedback extends \Phalcon\Mvc\User\Component
      * Imports text from an array of \Phalcon\Mvc\Message objects
      *
      * @param array $Model A model that has messages
-     * @param string $type The type of message to import as.  Can be namespaced.  Defaults to 'error'. Optional.
+     * @param string $type **[OPTIONAL]** The type of message to import as.  Can be namespaced.  Defaults to `error`
      * @uses self::setMessage() to set each message
      */
     public static function importMessages($Model,$type = 'error')
@@ -97,11 +91,11 @@ class Feedback extends \Phalcon\Mvc\User\Component
             self::setMessage($type, $message);
         }
     }
-    
+
 
     /**
      *
-     * Sets a new message.  Usually won't be invoked directly.
+     * Sets a new message.
      *
      * @param string $type      The type of message.  Must be in the format: TYPE[.NAMESPACE]
      * @param string $message   The actual message
@@ -120,37 +114,42 @@ class Feedback extends \Phalcon\Mvc\User\Component
 
 
     /**
-     * Retrieve messages.
-     *   
-     * @param string $class The class of message to retrieve.  Leave empty to retrieve all messages
-     *          ex: "error" -> retrieve all "error" messages
-     *              "error.email" -> retrieve all "error" messages with the "email" namespace
-     *              ".email" -> retrieve all messages with the "email" namespace
-     *              "error!email" -> retrieve all "error" messages that aren't in the "email" namespace
-     *              "!email" -> retrieve all messages that aren't in the "email" namespace
-     * @return array[string] The requested messages
+     * Retrieve messages.  Not called directly but used by `get([selectory])` and `get[Type](namespace)` calls
+     *
+     * @param string $selector The selector of message to retrieve.  Leave empty to retrieve all messages.
+     *
+     * ####Selector examples
+     * * `error`: retrieve all "error" messages
+     * * `error.email`: retrieve all "error" messages with the "email" namespace
+     * * `.email`: retrieve all messages with the "email" namespace
+     * * `error!email`: retrieve all "error" messages that aren't in the "email" namespace
+     * * `!email`: retrieve all messages that aren't in the "email" namespace
+     *
+     * @return array The requested messages
      */
-    private static function getMessage($class = null)
+    private static function getMessage($selector = null)
     {
 
-        /* If no class is passed, return all messages */
-        if ($class == null) {
+        /* If no selector is passed, return all messages */
+        if ($selector == null) {
             return self::combine(self::$messages);
         }
 
-
         /* Determine the message type and namespace */
-        $class = strtolower($class);
+        $selector = strtolower($selector);
 
-        if (strpos($class,'.') !== false || strpos($class,'!') !== false) {
-            list($type, $namespace) = preg_split('/[\.\!]/',$class);
+        $type      = '';
+        $namespace = null;
+
+        if (strpos($selector,'.') !== false || strpos($selector,'!') !== false) {
+            list($type, $namespace) = preg_split('/[\!\.]/',$selector);
         } else {
-            $type = $class;
+            $type = $selector;
             $namespace = null;
         }
 
         /* Find all messages of the passed type */
-        $filtered = (strlen($type)) 
+        $filtered = (strlen($type))
                         ?   array_filter(self::$messages,
                                 function ($key) use ($type) {
                                     return (strpos($key, $type) !== false);
@@ -162,28 +161,32 @@ class Feedback extends \Phalcon\Mvc\User\Component
 
 
         /* If necessary, filter further to get just those of the passed namespace */
-        if($namespace) {
+        if($namespace !== null) {
             $ofType = $filtered;
             $ofNamespace = array_filter($filtered,
                                 function ($key) use ($namespace) {
-                                    return (strpos($key, $namespace) !== false);
+                                	if($namespace == '*' && strpos($key,'.') !== false) {
+                                		return true;
+                                	}
+                                	else {
+                                    	return (strpos($key, $namespace) !== false);
+                                    }
                                 },
                                 ARRAY_FILTER_USE_KEY
             );
 
             /* If necessary, invert the selection to those messages of the right $type, that are NOT in the passed $namespace */
-            $filtered = (strpos($class,'!') !== false) 
-                            ? array_diff_key($ofType, $ofNamespace) 
+            $filtered = (strpos($selector,'!') !== false)
+                            ? array_diff_key($ofType, $ofNamespace)
                             : $ofNamespace;
         }
-
         return self::combine($filtered);
     }
 
     /**
      * Combines messages that may have been stored under different keys, into one array
-     * @param  array $messages A subsection of self::$messages
-     * @return array           All string messages in $messages, combined into 1 array
+     * @param  array $messages A subsection of `self::$messages`
+     * @return array All string messages in `$messages`, combined into 1 array
      */
     private static function combine($messages)
     {
@@ -204,7 +207,7 @@ class Feedback extends \Phalcon\Mvc\User\Component
      */
     public static function __callStatic($type, $params)
     {
-        return self::callBody($type, $params);   
+        return self::callBody($type, $params);
     }
 
     /**
@@ -222,17 +225,27 @@ class Feedback extends \Phalcon\Mvc\User\Component
     /**
      * The logic of the magic call methods.
      * Retrieves a message if a get*() method is called.  Sets a message if a set*() method is called.
+     *
+     * @param  string $type The name of the method being called
+     * @param  array $params The parameters of the method being called
      */
     private static function callBody($type, $params)
     {
-        # Check if we're retrieving a value 
-        if (strpos($type,'get') === 0) {
-            $type = substr($type, 3);
-            if (count($params) !== 0) {
-                if ($params[0][0] === '!' || $params[0][0] === '.') {
-                    $type .= $params[0];
-                } else {
-                    $type .= '.'.$params[0];
+        # Check if we're retrieving a value
+        if (strpos($type,'get') === 0){
+            // If just get() was called, pass along the selector
+            if($type === 'get'){
+                $type = $params[0];
+            }
+            // Otherwise, format the selector using part of the called method name
+            else{
+                $type = substr($type, 3);
+                if (count($params) !== 0) {
+                    if ($params[0][0] === '!' || $params[0][0] === '.') {
+                        $type .= $params[0];
+                    } else {
+                        $type .= '.'.$params[0];
+                    }
                 }
             }
 
@@ -249,7 +262,7 @@ class Feedback extends \Phalcon\Mvc\User\Component
         self::setMessage($type, $message);
     }
 
-    
+
 
     /**
      * Helper function to simplify retrieval of the Phalcon Session object
